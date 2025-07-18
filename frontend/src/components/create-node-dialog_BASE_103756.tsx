@@ -12,7 +12,7 @@ import { AppNodeSchema } from "@/types/nodes";
 import type { AppState } from "@/types/state";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useReactFlow } from "@xyflow/react";
-import React from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useShallow } from "zustand/react/shallow";
@@ -21,19 +21,18 @@ import { Button } from "./ui/button";
 
 const selector = (state: AppState) => ({
   nodes: state.nodes,
-  pendingNode:
-    state.dialogNodeData?.type === "pending" ? state.dialogNodeData.data : null,
+  pendingNode: state.pendingNodeData,
   setPendingNode: state.setPendingNodeData,
 });
 
 export const CreateNodeDialog = () => {
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const { pendingNode, setPendingNode, nodes } = useStore(useShallow(selector));
   const form = useForm<z.infer<typeof AppNodeSchema>>({
     resolver: zodResolver(AppNodeSchema),
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (pendingNode) {
       if (pendingNode.type === "statusNode") {
         form.reset({
@@ -47,7 +46,7 @@ export const CreateNodeDialog = () => {
         });
       } else {
         form.reset({
-          data: { title: "", description: "", git: null },
+          data: { title: "", description: "" },
           type: pendingNode.type,
         });
       }
@@ -60,10 +59,6 @@ export const CreateNodeDialog = () => {
   }, [pendingNode, form, nodes]);
 
   const { addNodes, addEdges, screenToFlowPosition } = useReactFlow();
-
-  const closable = React.useMemo(() => {
-    return nodes.length > 0;
-  }, [nodes]);
 
   if (pendingNode === null) {
     return null;
@@ -101,7 +96,6 @@ export const CreateNodeDialog = () => {
   return (
     <Dialog
       open={isOpen}
-      data-testid="create-node-dialog"
       onOpenChange={(open) => {
         if (!open) {
           if (nodes.length === 0) {
@@ -114,12 +108,15 @@ export const CreateNodeDialog = () => {
           // dialog, as pendingNodeData still has a value. This avoids that a the dialog is automatically
           // opened after a reload
           setPendingNode(null);
-          // At this point it is sufficient to set the pending node data to null, theReact.useEffect in this
+          // At this point it is sufficient to set the pending node data to null, the useEffect in this
           // component will close it for us
         }
       }}
     >
-      <DialogContent className="md:max-w-[800px]" showCloseButton={closable}>
+      <DialogContent
+        className="md:max-w-[700px]"
+        showCloseButton={nodes.length > 0}
+      >
         <DialogHeader>
           <DialogTitle>
             New{" "}
@@ -135,15 +132,12 @@ export const CreateNodeDialog = () => {
           submitForm={submitForm}
           submitButtonText="Create"
           cancelComponent={
-            closable ? (
+            nodes.length > 0 ? (
               <DialogClose asChild>
-                <Button data-testid="cancel-button" variant="outline">
-                  Cancel
-                </Button>
+                <Button variant="outline">Cancel</Button>
               </DialogClose>
             ) : null
           }
-          baseRev={pendingNode.defaultRev}
         />
       </DialogContent>
     </Dialog>

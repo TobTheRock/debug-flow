@@ -112,6 +112,16 @@ export const ActionNode = React.memo(
           </NodeHeader>
           <NodeMarkdownSection children={data.description} />
         </NodeContent>
+        {data.description && <div className="py-2">{data.description}</div>}
+        <NodeSection
+            children={
+              data.git ? (
+                <GitRevision
+                  revision={data.git}
+                />
+              ) : null
+            }
+          />
         <BaseHandle
           id={handleIds.target}
           type="target"

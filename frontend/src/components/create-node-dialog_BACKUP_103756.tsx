@@ -119,7 +119,14 @@ export const CreateNodeDialog = () => {
         }
       }}
     >
-      <DialogContent className="md:max-w-[800px]" showCloseButton={closable}>
+<<<<<<< HEAD
+      <DialogContent className="md:max-w-[700px]" showCloseButton={closable}>
+=======
+      <DialogContent
+        className="md:max-w-[800px]"
+        showCloseButton={nodes.length > 0}
+      >
+>>>>>>> 77b79f3 (feat(frontend): create tags or branches for action nodes)
         <DialogHeader>
           <DialogTitle>
             New{" "}

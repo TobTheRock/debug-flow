@@ -52,7 +52,6 @@ interface CommonGitMetadata<T extends GitMetaDataType> {
 type CommitMetadata = CommonGitMetadata<"commit">;
 type TagMetadata = CommonGitMetadata<"tag">;
 type BranchMetadata = CommonGitMetadata<"branch">;
-
 export type GitMetadata = CommitMetadata | TagMetadata | BranchMetadata;
 
 export function isCommitMetadata(
@@ -86,7 +85,6 @@ export async function fetchCurrentHeadCommit(): Promise<GitMetadata> {
 
   if (error) {
     const errorMessage = `Error getting current HEAD revision: ${error.message}`;
-    logger.error(errorMessage);
     throw new Error(errorMessage);
   }
   return { rev: data.id, summary: data.summary, type: "commit" };
@@ -99,7 +97,6 @@ export async function fetchCommits(filter?: string): Promise<GitMetadata[]> {
 
   if (error) {
     const errorMessage = `Error fetching Git commits: ${error.message}`;
-    logger.error(errorMessage);
     throw new Error(errorMessage);
   }
 
@@ -117,7 +114,6 @@ export async function fetchTags(filter?: string): Promise<GitMetadata[]> {
 
   if (error) {
     const errorMessage = `Error fetching Git tags: ${error.message}`;
-    logger.error(errorMessage);
     throw new Error(errorMessage);
   }
 
@@ -135,7 +131,6 @@ export async function fetchBranches(filter?: string): Promise<GitMetadata[]> {
 
   if (error) {
     const errorMessage = `Error fetching Git branches: ${error.message}`;
-    logger.error(errorMessage);
     throw new Error(errorMessage);
   }
 
@@ -144,4 +139,48 @@ export async function fetchBranches(filter?: string): Promise<GitMetadata[]> {
     summary: branch.head.summary,
     type: "branch",
   }));
+}
+
+export async function createBranch(
+  name: string,
+  revision: GitMetadata,
+): Promise<BranchMetadata> {
+  const { data, error } = await client.POST("/api/v1/git/branches", {
+    params: {
+      query: { name, revision: revision.rev },
+    },
+  });
+
+  if (error) {
+    const errorMessage = `${error.message}`;
+    throw new Error(errorMessage);
+  }
+
+  return {
+    rev: data.name,
+    summary: data.head.summary,
+    type: "branch",
+  };
+}
+
+export async function createTag(
+  name: string,
+  revision: GitMetadata,
+): Promise<TagMetadata> {
+  const { data, error } = await client.POST("/api/v1/git/tags", {
+    params: {
+      query: { name, revision: revision.rev },
+    },
+  });
+
+  if (error) {
+    const errorMessage = `${error.message}`;
+    throw new Error(errorMessage);
+  }
+
+  return {
+    rev: data.tag,
+    summary: data.commit.summary,
+    type: "tag",
+  };
 }
