@@ -1,11 +1,19 @@
-import { fetchCommits, fetchTags, type GitMetadata } from "@/client";
+import {
+  createBranch,
+  fetchBranches,
+  fetchCommits,
+  fetchTags,
+  type GitMetadata,
+} from "@/client";
 import type { AppNodeType } from "@/types/nodes";
 import { AppNodeSchema, formatGitRevision } from "@/types/nodes";
 import log from "loglevel";
 import { useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import { AsyncCombobox } from "./async-combobox";
+import { CreateGitRevisionInput } from "./create-git-rev";
 import { IconSelectContent } from "./icon-select-content";
 import { MarkdownPreviewTextarea } from "./markdown-preview-textarea";
 import { statusNodeStateIconConfig } from "./state-colors-icons";
@@ -42,6 +50,8 @@ interface NodeFormProps {
   submitButtonText: string;
   /** Component to cancel the form */
   cancelComponent?: React.ReactNode;
+  /** Optional base revision to allow creating branches/tags from */
+  baseRev?: GitMetadata | null;
 }
 
 export const NodeForm = ({
@@ -50,6 +60,7 @@ export const NodeForm = ({
   submitForm,
   submitButtonText,
   cancelComponent,
+  baseRev,
 }: NodeFormProps) => {
   const fetchGitTagsAndRevisions = async (
     value: string,
@@ -59,6 +70,33 @@ export const NodeForm = ({
       fetchTags(value),
     ]);
     return [...revisions, ...tags];
+  };
+
+  const fetchGitTagsAndBranches = async (value: string) => {
+    const [branches, tags] = await Promise.all([
+      fetchBranches(value),
+      fetchTags(value),
+    ]);
+
+    return [...branches, ...tags];
+  };
+
+  const createBranchFromBaseRev = async (
+    name: string,
+  ): Promise<GitMetadata | null> => {
+    if (!name || !baseRev) {
+      logger.error(
+        "Cannot create branch: no branch name or base revision provided",
+      );
+      return null;
+    }
+
+    try {
+      return createBranch(name, baseRev);
+    } catch (error) {
+      toast.error("Failed to create branch: " + (error as Error).message);
+    }
+    return null;
   };
 
   const [gitRevSuggestionsIsOpen, setGitRevSuggestionIsOpen] = useState(false);
@@ -155,6 +193,47 @@ export const NodeForm = ({
                       commandProps={{ shouldFilter: false }}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
+        {nodeType === "actionNode" && (
+          <div className="space-y-8">
+            <FormField
+              control={form.control}
+              name="data.git"
+              render={({ field }) => (
+                <FormItem className="flex gap-4">
+                  <FormLabel className="w-24">Git Branch/Tag</FormLabel>
+                  <FormControl>
+                    <AsyncCombobox<GitMetadata>
+                      fetchItems={fetchGitTagsAndBranches}
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Select branch/tag"
+                      onDropdownOpenChange={setGitRevSuggestionIsOpen}
+                      renderDropdownItem={GitRevCommandItem}
+                      renderValue={formatGitRevision}
+                      getItemValue={(item) => {
+                        return item.rev;
+                      }}
+                      fontFamily="font-mono"
+                      buttonClasses="w-[200px]"
+                      commandProps={{ shouldFilter: false }}
+                    />
+                  </FormControl>
+                  <CreateGitRevisionInput
+                    onSubmit={async (type, name) => {
+                      if (type === "branch") {
+                        let rev = await createBranchFromBaseRev(name);
+                        form.setValue("data.git", rev);
+                      }
+                    }}
+                    branchDisabled={!baseRev}
+                    tagDisabled={!baseRev}
+                  />
                   <FormMessage />
                 </FormItem>
               )}

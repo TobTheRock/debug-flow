@@ -46,7 +46,7 @@ export const CreateNodeDialog = () => {
         });
       } else {
         form.reset({
-          data: { title: "", description: "" },
+          data: { title: "", description: "", git: null },
           type: pendingNode.type,
         });
       }
@@ -114,7 +114,7 @@ export const CreateNodeDialog = () => {
       }}
     >
       <DialogContent
-        className="md:max-w-[700px]"
+        className="md:max-w-[800px]"
         showCloseButton={nodes.length > 0}
       >
         <DialogHeader>
@@ -138,6 +138,7 @@ export const CreateNodeDialog = () => {
               </DialogClose>
             ) : null
           }
+          baseRev={pendingNode.defaultRev}
         />
       </DialogContent>
     </Dialog>

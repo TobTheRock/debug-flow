@@ -145,3 +145,26 @@ export async function fetchBranches(filter?: string): Promise<GitMetadata[]> {
     type: "branch",
   }));
 }
+
+export async function createBranch(
+  name: string,
+  revision: GitMetadata,
+): Promise<BranchMetadata> {
+  const { data, error } = await client.POST("/api/v1/git/branches", {
+    params: {
+      query: { name, revision: revision.rev },
+    },
+  });
+
+  if (error) {
+    const errorMessage = `Failed to create git branch: ${error.message}`;
+    logger.error(errorMessage);
+    throw new Error(errorMessage);
+  }
+
+  return {
+    rev: data.name,
+    summary: data.head.summary,
+    type: "branch",
+  };
+}
