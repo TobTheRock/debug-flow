@@ -170,6 +170,7 @@ export const AsyncCombobox = <ItemType,>({
                             setOpen(false);
                           }}
                         >
+                          {renderDropdownItem(item)}
                           <Check
                             className={cn(
                               "h-4 w-4",
@@ -178,7 +179,6 @@ export const AsyncCombobox = <ItemType,>({
                                 : "opacity-0",
                             )}
                           />
-                          {renderDropdownItem(item)}
                         </CommandItem>
                       );
                     })}
