@@ -6,6 +6,7 @@ import React from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import { AsyncCombobox } from "./async-combobox";
+import { GitRevisionIcon } from "./git-revision";
 import { IconSelectContent } from "./icon-select-content";
 import { MarkdownPreviewTextarea } from "./markdown-preview-textarea";
 import { statusNodeStateIconConfig } from "./state-colors-icons";
@@ -24,7 +25,13 @@ import { Select, SelectTrigger, SelectValue } from "./ui/select";
 const GitRevCommandItem = (m: GitMetadata) => {
   return (
     <div className="font-mono">
-      <span className="font-bold">{formatGitRevision(m)}</span> • {m.summary}
+      <span className="inline-flex items-center font-bold">
+        <GitRevisionIcon revision={m} size={1} />
+
+        <span className="ml-1">{formatGitRevision(m)}</span>
+      </span>
+      {" • "}
+      {m.summary}
     </div>
   );
 };
