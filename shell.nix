@@ -3,7 +3,7 @@
 pkgs.mkShell {
   buildInputs =
     # TODO use rust overay to install rust toolchain
-    [ pkgs.nodejs_24 pkgs.openssl pkgs.pkg-config pkgs.pre-commit ];
+    [ pkgs.nodejs_24 pkgs.openssl pkgs.pkg-config pkgs.pre-commit pkgs.cargo-dist ];
 
   shellHook = ''
     export OPENSSL_DIR=${pkgs.openssl.dev}

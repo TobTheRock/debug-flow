@@ -1,3 +1,8 @@
 [workspace]
 resolver = "3"
 members = ["backend/app", "backend/git2-ox"]
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
