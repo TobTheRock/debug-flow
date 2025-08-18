@@ -19,14 +19,14 @@ concurrency:
 
 jobs:
   check:
-    uses: ./.github/workflows/check.yaml
+    uses: ./.github/workflows/check.yml
 
   build:
-    uses: ./.github/workflows/build.yaml
+    uses: ./.github/workflows/build.yml
     needs: check
 
   test:
-    uses: ./.github/workflows/test.yaml
+    uses: ./.github/workflows/test.yml
     needs: build
 
   deploy-docs:
